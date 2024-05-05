@@ -12,9 +12,6 @@
 
 ## Installation
 
-```console
-pip install coffee
-```
 
 ## License
 
