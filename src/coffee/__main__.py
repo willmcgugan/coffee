@@ -254,6 +254,9 @@ class CoffeeApp(App):
                 yield FAQPanel(id="faq")
                 yield CartPanel(id="cart")
 
+    def on_app_focus(self) -> None:
+        self.query("ContentSwitcher #shop .auto-focus").first().focus()
+
     def action_switch_panel(self, panel: str) -> None:
         self.active_panel = panel
         self.query_one(ContentSwitcher).current = panel

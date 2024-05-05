@@ -2,5 +2,5 @@
 api_key = "0N2YN7M88DKA"
 
 [app.Shop]
-command = "python -m coffee"
+command = "hatch run python -m coffee"
 
