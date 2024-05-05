@@ -1,7 +1,8 @@
+import asyncio
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Coroutine
 
+from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll, Center
 from textual.events import Resize
@@ -10,17 +11,19 @@ from textual.widgets import (
     Input,
     Static,
     Label,
-    Placeholder,
     ContentSwitcher,
     Markdown,
 )
 from textual.reactive import reactive
 
 
-ABOUT_MD = """
-1. Amazing awesome coffee shop brought to you by @willmcgugan
+ABOUT_MD = """\
+### About
 
-2. Will's Coffee, Inc
+This was a Sunday afternoon coding session, just for fun.
+It has no connection to terminal.shop.
+
+Brought to you by @willmcgugan, head code monkey at Textualize.
 """
 
 
@@ -55,13 +58,41 @@ class Question:
 
 
 FAQS = [
-    Question("Where do you ship?", "We don't."),
-    Question("Is your coffee ethically sourced?", "Yes."),
-    Question("What is the meaning of life the universe and everything?", "42"),
+    Question(
+        "where do you ship?",
+        "We don't ship. But if you visit @willmcgugan, he may make you a cup of coffee.",
+    ),
+    Question(
+        "is your coffee ethically sourced?",
+        "Not sure. I get it from the place around the corner.",
+    ),
+    Question(
+        "is ordering via ssh secure?", "it is. But you can't order anything from here."
+    ),
+    Question(
+        "how do you store my data?",
+        "We don't store anything. Close the browser and it is though we never met.",
+    ),
+    Question(
+        "I only want to drink Nil / None, do you offer a subscription?",
+        "The coffee is made up, so no, we don't offer a subscription.",
+    ),
+    Question(
+        "Will Nil / None make me a better developer?",
+        "Coffee is known to give super-human coding prowess. So yes.",
+    ),
+    Question(
+        "Does coffee from the command line taste better than regular coffee?",
+        "Depends on your shell and OS.",
+    ),
 ]
 
 
 class Column(Vertical):
+    pass
+
+
+class NonFocusableVerticalScroll(VerticalScroll, can_focus=False):
     pass
 
 
@@ -90,16 +121,16 @@ class OrderCounter(Horizontal):
 
 
 class ProductWidget(Vertical, can_focus=True):
-    order_count = reactive(0)
+    order_count: reactive[int] = reactive(0)
 
     BINDINGS = [
         ("minus", "order(-1)"),
         ("plus", "order(+1)"),
     ]
 
-    def __init__(self, product: Product) -> None:
+    def __init__(self, product: Product, classes: str) -> None:
         self.product = product
-        super().__init__()
+        super().__init__(classes=classes)
 
     def compose(self) -> ComposeResult:
         yield Static(self.product.name, classes="name")
@@ -114,39 +145,41 @@ class ProductWidget(Vertical, can_focus=True):
 
 class ProductsPanel(Vertical):
     def compose(self) -> ComposeResult:
-        with VerticalScroll():
+        with NonFocusableVerticalScroll():
             for product in PRODUCTS:
-                yield ProductWidget(product)
+                yield ProductWidget(product, classes="auto-focus")
 
         yield Label(
-            "[b]+[/] add   [b]-[/] remove   [b]c[/] cart   [b]q[/] quit",
+            "[b]tab[/] [dim]next product[/]   [b]+[/] [dim]add[/dim]   [b]-[/] [dim]remove[/dim]   [b]c[/] [dim]cart[/]   [b]q[/] [dim]quit[/dim]",
             classes="footer",
         )
 
 
 class AboutPanel(Vertical):
     def compose(self) -> ComposeResult:
-        with Vertical(classes="content"):
+        with Vertical(classes="content auto-focus"):
             yield Markdown(ABOUT_MD)
-        yield Label("[b]c[/] cart", classes="footer")
+        yield Label("[b]↑↓[/] [dim]scroll[/]   [b]c[/] [dim]cart[/]", classes="footer")
 
 
 class FAQPanel(Vertical):
     def compose(self) -> ComposeResult:
-        with VerticalScroll(classes="content"):
-            for question in FAQS * 10:
-                yield Label(question.q, classes="question")
-                yield Label(question.a, classes="answer")
+        with VerticalScroll(classes="content auto-focus"):
+            for question in FAQS:
+                yield Static(question.q, classes="question")
+                yield Static(question.a, classes="answer")
 
         yield Label(
-            "[b]c[/] cart",
+            "[b]↑↓[/] [dim]scroll[/]   [b]c[/] [dim]cart[/]",
             classes="footer",
         )
 
 
 class CartPanel(Vertical):
+    BINDINGS = [("escape", "blur")]
+
     def compose(self) -> ComposeResult:
-        with VerticalScroll(classes="content"):
+        with VerticalScroll(classes="content auto-focus"):
             yield Label("name")
             yield Input("", placeholder="Your name")
             yield Label("Credit card")
@@ -160,9 +193,21 @@ class CartPanel(Vertical):
             yield Button("Place order", variant="success")
 
         yield Label(
-            "[b]tab[/] Next field   [b]shift+tab[/] Previous field",
+            "[b]tab[/] [dim]next[/]   [b]shift+tab[/] [dim]previous[/]  [b]escape[/] [dim]exit form[/dim]",
             classes="footer",
         )
+
+    def action_blur(self) -> None:
+        if self.app.focused:
+            self.query_one(VerticalScroll).focus()
+
+    @work
+    async def on_button_pressed(self):
+        self.query_one(".content").loading = True
+        self.notify("Nothing is really happening. Please wait five seconds.")
+        await asyncio.sleep(5)
+        self.notify("And we are back. Again, nothing happened.")
+        self.query_one(".content").loading = False
 
 
 class Header(Container):
@@ -170,20 +215,26 @@ class Header(Container):
 
     def compose(self) -> ComposeResult:
         active_panel = self.active_panel
-        yield Label("[b]Terminal")
-        yield Label("[b]s[/b] Shop", classes="active" if active_panel == "shop" else "")
+        yield Label("[b not dim]terminal")
         yield Label(
-            "[b]a[/b] About", classes="active" if active_panel == "about" else ""
+            "[not dim]s[/] shop", classes="active" if active_panel == "shop" else ""
         )
-        yield Label("[b]f[/b] Faq", classes="active" if active_panel == "faq" else "")
-        yield Label("[b]c[/b] Cart", classes="active" if active_panel == "cart" else "")
+        yield Label(
+            "[not dim]a[/] about", classes="active" if active_panel == "about" else ""
+        )
+        yield Label(
+            "[not dim]f[/] faq", classes="active" if active_panel == "faq" else ""
+        )
+        yield Label(
+            "[not dim]c[/] cart", classes="active" if active_panel == "cart" else ""
+        )
 
 
 class CoffeeApp(App):
     CSS_PATH = "coffee.tcss"
     DEFAULT_CLASSES = "narrow"
 
-    active_panel = reactive("shop")
+    active_panel: reactive[str] = reactive("shop")
 
     BINDINGS = [
         ("s", "switch_panel('shop')"),
@@ -195,7 +246,8 @@ class CoffeeApp(App):
 
     def compose(self) -> ComposeResult:
         with Column():
-            yield Header().data_bind(CoffeeApp.active_panel)
+            with Center():
+                yield Header().data_bind(CoffeeApp.active_panel)
             with ContentSwitcher(initial="shop"):
                 yield ProductsPanel(id="shop")
                 yield AboutPanel(id="about")
@@ -205,6 +257,7 @@ class CoffeeApp(App):
     def action_switch_panel(self, panel: str) -> None:
         self.active_panel = panel
         self.query_one(ContentSwitcher).current = panel
+        self.query(f"ContentSwitcher #{panel} .auto-focus").first().focus()
 
     def on_resize(self, event: Resize) -> None:
         self.query_one("Screen").set_class(self.size.width < 60, "narrow")

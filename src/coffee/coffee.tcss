@@ -16,16 +16,18 @@ Screen.narrow {
 Column {
     max-width: 60;
 
-    Header {
+    Header {     
+        margin: 2 0 0 0;   
         keyline: thin #555;
-        width: 1fr;
+        width: auto;
         height: auto; 
         layout: horizontal;
         Label {            
             padding: 0 2;
             margin: 1;
+            text-style: dim;
             &.active {
-                text-style: underline;
+                text-style: not dim;
             }
         }
     }
@@ -49,16 +51,18 @@ Column {
         height: 1fr;
     }
 
+
+
     ProductWidget {
         height: auto;
-        margin: 1 0;
+        margin: 1 2;
         background: $panel; 
         padding: 1 2;
 
-        border: blank;
+        border: wide transparent;
 
         &:focus {
-            border: heavy $accent;
+            border: wide $accent;
         }
 
         .name {
@@ -106,6 +110,8 @@ Column {
     }
 
     CartPanel {
+       
+        margin-top: 2;
         Label {
             padding-left: 1;
         }
