@@ -2,6 +2,17 @@ Screen {
     align: center top;
 }
 
+Screen.narrow {
+
+    Header {       
+        layout: vertical;
+        Label {
+            width: 1fr;
+        }
+    }
+
+}
+
 Column {
     max-width: 60;
 
@@ -9,6 +20,7 @@ Column {
         keyline: thin #555;
         width: 1fr;
         height: auto; 
+        layout: horizontal;
         Label {            
             padding: 0 2;
             margin: 1;

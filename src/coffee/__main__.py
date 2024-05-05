@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Coroutine
 
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal, Vertical, VerticalScroll, Center
+from textual.containers import Container, Horizontal, Vertical, VerticalScroll, Center
+from textual.events import Resize
 from textual.widgets import (
     Button,
     Input,
@@ -163,7 +165,7 @@ class CartPanel(Vertical):
         )
 
 
-class Header(Horizontal):
+class Header(Container):
     active_panel = reactive("shop", recompose=True)
 
     def compose(self) -> ComposeResult:
@@ -179,6 +181,7 @@ class Header(Horizontal):
 
 class CoffeeApp(App):
     CSS_PATH = "coffee.tcss"
+    DEFAULT_CLASSES = "narrow"
 
     active_panel = reactive("shop")
 
@@ -202,6 +205,9 @@ class CoffeeApp(App):
     def action_switch_panel(self, panel: str) -> None:
         self.active_panel = panel
         self.query_one(ContentSwitcher).current = panel
+
+    def on_resize(self, event: Resize) -> None:
+        self.query_one("Screen").set_class(self.size.width < 60, "narrow")
 
 
 if __name__ == "__main__":
