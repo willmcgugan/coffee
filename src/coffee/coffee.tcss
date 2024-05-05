@@ -1,0 +1,107 @@
+Screen {
+    align: center top;
+}
+
+Column {
+    max-width: 60;
+
+    Header {
+        keyline: thin #555;
+        width: 1fr;
+        height: auto; 
+        Label {            
+            padding: 0 2;
+            margin: 1;
+            &.active {
+                text-style: underline;
+            }
+        }
+    }
+
+    .content {
+        height: 1fr;
+    }
+
+
+    .footer {
+        width: 1fr;
+        border-top: #555;
+       
+        margin: 0 0 2 0;
+        height: auto;
+        text-align: center;
+    }
+
+
+    ContentSwitcher {        
+        height: 1fr;
+    }
+
+    ProductWidget {
+        height: auto;
+        margin: 1 0;
+        background: $panel; 
+        padding: 1 2;
+
+        border: blank;
+
+        &:focus {
+            border: heavy $accent;
+        }
+
+        .name {
+            margin: 1 0;
+            text-style: bold;
+        }
+        .sku {
+            margin: 1 0;
+            text-opacity: 0.5;
+        }
+        .price {
+            margin: 1 0;
+            color: red;
+            text-style: bold;
+        }
+        .description {
+            margin: 1 0;
+        }
+    }
+
+    OrderCounter {
+        height: auto;
+        width: auto;
+        border: $success;
+        &>* {
+            margin: 0 1;
+        }
+    }
+
+    AboutPanel Markdown {
+        padding-top: 2;
+        width: 1fr;
+    }
+
+    FAQPanel {
+        padding-top: 2;
+
+        .question {
+
+        }
+        .answer {
+            text-style: dim;
+            padding-bottom: 1;
+        }
+    }
+
+    CartPanel {
+        Label {
+            padding-left: 1;
+        }
+        Input {
+            margin-bottom: 1;
+        }
+        Button {
+            margin-left: 1;
+        }
+    }
+}
