@@ -5,6 +5,9 @@
 
 -----
 
+![coffee](https://github.com/willmcgugan/coffee/assets/554369/7e711a39-6f2e-4bf6-a28c-b3945fec9a65)
+
+
 ## Table of Contents
 
 - [Installation](#installation)
