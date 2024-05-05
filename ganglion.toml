@@ -1,6 +1,0 @@
-[account]
-api_key = "0N2YN7M88DKA"
-
-[app.Shop]
-command = "hatch run python -m coffee"
-
